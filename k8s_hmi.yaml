@@ -1,0 +1,185 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: hmishare
+  namespace: yunwei
+subsets:
+  - addresses:
+      - ip: 172.16.2.219
+    ports:
+      - port: 1
+        protocol: TCP
+  - addresses:
+      - ip: 172.16.2.220
+    ports:
+      - port: 1
+        protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hmishare
+  namespace: yunwei
+spec:
+  ports:
+    - port: 1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: hmishare
+  labels:
+    for: hmishare
+  namespace: yunwei
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: hmishare
+    path: /hmishare
+    readOnly: false
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: yunwei
+  name: hmishare
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  selector:
+    matchLabels:
+      for: hmishare
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hmi
+  namespace: yunwei
+spec:
+  selector:
+    app: hmi
+  ports:
+    - port: 8000
+      nodePort: 30059
+  type: NodePort
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hmi
+  namespace: yunwei
+data:
+  hmi_user: aG1pYWRtaW4=
+  hmi_password: djhrcjIycmJ5aUlrc2RmZk91dHE=
+  id_rsa: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcGdJQkFBS0NBUUVBdnNNdVZrKzBFL2FtbDRCWkJIWER0ZVJxSFlVaUJDWDllc2w2RFhCeTV0OXA4aUM0Ck5mRU14U05hUlhJV1FhUjdURXlLUGt3OUNOcTJVWEJqNHlFelFibkx0aGVVTXZuNWN0UUtaTmhLMmYvQUNWZzIKaENXWlc1ek10dTZWbjJYQ1ZmeGJyT09qNHF6eFpBNFdQdTB4V1ZOK0Z2eXBKczdMc3B4Q2t4OG1BOXpycWZzcApyNTllYXY5T2pEelBraUU1SmNOMUdzTFFYV1UzS0paSFpRMGY2bC9ydkpieDEzUkh4MEdBV2N4UEl6Uy82aGRhCmxkWUk4NVNVbk5rajhnbUFmSjNlajZnYnRuZmMrTHJJSGkvYitmTlJMVTRhYU0vTFFxUmh1cU1NbHlaaHdWbUIKb3k0TkxTM3dIMTgvZmF5MHpHZldUWmdXV20rSmFwZFZPWmVJaHdJREFRQUJBb0lCQVFDd0V5SFRBdkJaT09HZApseGNUR2N2U09RbUZROXdZN2lQZ1VOVTZVRitPSUFyL05Sb3lsOUxNcDR2cjY1a0ZiOWRxbm44L2Iwa3F3ZzFrCmNCT1NrcE5vQ0NFeWF1TWNoa1NycTNJSWtPZk4vZFQ0Q3hjT3RGR3dFTE9YNmZIcTFaY2huTFBWaWF3OFRwcmsKV21oSUh0RGMvVWExMnZJYVl1ZjdiV1c1dkJkdm1jRC9QZ2FIaXBXQ1g0b1dDRzkza1FnRE15OXZrR3hMM3pzagpLUmpmellGVW10UDgvQXlmUVNKNnIxZzJmNGNVOUVMVXB3RmJOS0pMb1U2NXFvZzZHb2FjcHpxRGora3lpUjY1CnhBUkxjVlh3bUgwTXN3cXY5VHQ3Zno2enpUb1RmVGxnSkJDcHhmNkQ5RlRsQU8rZ0IwSk1Oc2hqMDdjR2tIbmEKRmF0S0tNaUJBb0dCQVBaeVBLaEM5dGpzbmw3Ry9sbEVUSFducS9xSnlPM3pHRDM3RXR3M0gwaThkMkpNb0liSQphdjFFa29kVHh1M0FLZXFMSWlyS2NzY05qVG1FNU0xa3dvTnpyRVBNTUpQbXNvUUltelBQcmdZN0lZbHVwRlF1CjFJNk45SFBNekxad0YrTFBrUnVjRE9OSHpNdFZBREgzQWVlQ2FzbkhYQU5jLzNwbkN3NXRlT1JCQW9HQkFNWW8KVkx3OEVNcEV4YUcyWVA1UUtrTFA5Skg4eWF4MnlZU1NKVnBrTDdZclF6MVRNNVhnanBBc3ZYV2RneFB1SGtOLwpUdUZoNkpYbUtuUnZZeDdaOHpxc2U2TEl2UHpZdkxyWnp4WDFFODhUZEQvaklFSEgzb0VGUEpmS1B3TWZDaldiCklsOVhoL3ZqeU40R2RuSGllU1JQY294K2lDdkhzbjNLQ25Zbmo1ckhBb0dCQUswbTZsTldhVlZVT3BsZ3V3aEIKSW05djFUZDhZMzQ3MUlhSHgyS09JQjdjdkF5R3hpcXMyZThFcE9jTUI3SzMxenVCY2dvYW43WVhZV2hPWk91aQpwYi95SDlDcXdGN0tNaGJ1YlExa0YyTXRYSXpRL2doZnR0eEtCTHp2NGMwMHlMT0ZIdkVGSFZENiszckpTQS9TCityV01QamR6S01UOExFdjE1aURHN2ErQkFvR0JBTGxRK24zWGhyUkRRTGlOZ1lRVW9KRS9QakJSUXFKQnJSQ0kKUk5xV0czQzRZUGUzR2VVdXp1VFNrcFN1SyttMXBTUG1xWFJxUmtQNXJ2YVpQUStiTUxkTW00dVBRLzhMQ3VXTAowUGx0NjRxYlhQcHFoTDVBRnp4K0V6NjVhOWlWYk16Wk9ub0R1QzYveGhpdDNwTi9BMkFMMU1yRGdzRyt6cFNKCklPT0M5Ky85QW9HQkFJM05uemFpaUg5akt2ZTlySEZCVE9kOE1KVVVXNFJZLzZ0R1JpZXZPTlF3ekViWTlHYVIKZktJeEpPd2JucUFIK01RTUZ3NkkwZUVPSHk2OFZrZ1ZhR2ZLUG1EeE1lTi9CYm9pQWdRMmRNWlA4UkZCaUlEMQpvMEpVc09VYlRyZVBHY0s0Y21VUnVHTlNieFE0TXJ5cHRWcWh1TFNrU0ZFcE53UmcxN2VISVFveAotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+  id_rsa.pub: |
+    c3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFCQVFDK3d5NVdUN1FUOXFhWGdGa0Vk
+    Y08xNUdvZGhTSUVKZjE2eVhvTmNITG0zMm55SUxnMThRekZJMXBGY2haQnBIdE1USW8rVEQwSTJy
+    WlJjR1BqSVROQnVjdTJGNVF5K2ZseTFBcGsyRXJaLzhBSldEYUVKWmxibk15MjdwV2ZaY0pWL0Z1
+    czQ2UGlyUEZrRGhZKzdURlpVMzRXL0trbXpzdXluRUtUSHlZRDNPdXAreW12bjE1cS8wNk1QTStT
+    SVRrbHczVWF3dEJkWlRjb2xrZGxEUi9xWCt1OGx2SFhkRWZIUVlCWnpFOGpOTC9xRjFxVjFnanps
+    SlNjMlNQeUNZQjhuZDZQcUJ1MmQ5ejR1c2dlTDl2NTgxRXRUaHBvejh0Q3BHRzZvd3lYSm1IQldZ
+    R2pMZzB0TGZBZlh6OTlyTFRNWjlaTm1CWmFiNGxxbDFVNWw0aUggcm9vdEBhcHAwMS5obWkuaGFu
+    ZHU=
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hmi
+  namespace: yunwei
+data:
+  hmi_host: 172.16.3.74
+  hmi_port: "3366"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hmi
+  namespace: yunwei
+  labels:
+    app: hmi
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: hmi
+      labels:
+        app: hmi
+    spec:
+      nodeSelector:
+        gluster: cluster1
+      volumes:
+        - name: hmishare
+          persistentVolumeClaim:
+            claimName: hmishare
+        - name: idrsa
+          secret:
+            secretName: hmi
+            items:
+              - key: id_rsa
+                path: id_rsa
+                mode: 0600
+              - key: id_rsa.pub
+                path: id_rsa.pub
+                mode: 0600
+      containers:
+        - name: hmi
+          image: 172.16.2.213/yunwei/hmi:v1.0
+          volumeMounts:
+            - mountPath: "/opt/HMI/mysql_install_files"
+              name: hmishare
+            - mountPath: "/root/.ssh/id_rsa"
+              readOnly: True
+              name: idrsa
+              subPath: id_rsa
+            - mountPath: "/root/.ssh/id_rsa.pub"
+              readOnly: True
+              name: idrsa
+              subPath: id_rsa.pub
+          env:
+            - name: hmi_host
+              valueFrom:
+                configMapKeyRef:
+                  key: hmi_host
+                  name: hmi
+            - name: hmi_port
+              valueFrom:
+                configMapKeyRef:
+                  key: hmi_port
+                  name: hmi
+            - name: hmi_user
+              valueFrom:
+                secretKeyRef:
+                  key: hmi_user
+                  name: hmi
+            - name: hmi_password
+              valueFrom:
+                secretKeyRef:
+                  key: hmi_password
+                  name: hmi
+          imagePullPolicy: Always
+          workingDir: "/opt/HMI"
+          command:
+            - "/bin/bash"
+          args:
+            - "-c"
+            - "uvicorn mysql_install_app.main:app  --workers 10 --host 0.0.0.0"
+      imagePullSecrets:
+        - name: yunwei
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: hmi
+
+
